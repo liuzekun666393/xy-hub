@@ -17,12 +17,12 @@
 
 **Windows**
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -Command "$u='https://ghproxy.net/https://raw.githubusercontent.com/liuzekun666393/xy-hub/main/bootstrap/connect.ps1'; iwr -UseBasicParsing $u -OutFile $env:TEMP\xy.ps1; & $env:TEMP\xy.ps1"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$u='https://ghproxy.net/https://raw.githubusercontent.com/liuzekun666393/xy-hub/main/connect.ps1'; iwr -UseBasicParsing $u -OutFile $env:TEMP\xy.ps1; & $env:TEMP\xy.ps1"
 ```
 
 **macOS / Linux**
 ```bash
-curl -fsSL https://ghproxy.net/https://raw.githubusercontent.com/liuzekun666393/xy-hub/main/bootstrap/connect.sh | bash
+curl -fsSL https://ghproxy.net/https://raw.githubusercontent.com/liuzekun666393/xy-hub/main/connect.sh | bash
 ```
 
 > 国内直连 GitHub 基本不通，所以命令里**默认就带镜像**。脚本内部还会按 `relay.json`
