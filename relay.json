@@ -1,0 +1,49 @@
+{
+  "version": 2,
+  "updated": "2026-11-06",
+  "note": "线路表：connect.ps1 / connect.sh 逐个测通再选最快的。把 REPO 换成实际仓库路径。",
+  "repo": "xy-hub/bootstrap",
+  "files": {
+    "connect_core.py": "bootstrap/connect_core.py",
+    "connect.ps1": "bootstrap/connect.ps1",
+    "connect.sh": "bootstrap/connect.sh",
+    "cloudflared_win": "bootstrap/bin/cloudflared-windows-amd64.exe",
+    "cloudflared_linux": "bootstrap/bin/cloudflared-linux-amd64"
+  },
+  "lines": [
+    {
+      "id": "ghproxy",
+      "kind": "mirror",
+      "template": "https://ghproxy.net/https://raw.githubusercontent.com/{repo}/main/{path}",
+      "expect": "国内可用，偶尔 5xx"
+    },
+    {
+      "id": "ghfast",
+      "kind": "mirror",
+      "template": "https://ghfast.top/https://raw.githubusercontent.com/{repo}/main/{path}",
+      "expect": "备用加速"
+    },
+    {
+      "id": "jsdelivr",
+      "kind": "cdn",
+      "template": "https://cdn.jsdelivr.net/gh/{repo}@main/{path}",
+      "expect": "只适合文本，二进制不稳"
+    },
+    {
+      "id": "raw",
+      "kind": "origin",
+      "template": "https://raw.githubusercontent.com/{repo}/main/{path}",
+      "expect": "直连，国内多数不通"
+    },
+    {
+      "id": "self",
+      "kind": "reverse-proxy",
+      "template": "https://xy.example.com/{path}",
+      "expect": "自建反代，最稳；上线后把它排第一"
+    }
+  ],
+  "order_hint": "先测 25s 超时的 HEAD，取首个 200 且 <1.5s；都不通则按 lines 顺序硬试",
+  "ttl_sec": 14400,
+  "key_bytes": 16,
+  "shell_port_range": [45000, 45999]
+}
