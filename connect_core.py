@@ -143,7 +143,8 @@ class Handler(BaseHTTPRequestHandler):
                 p = subprocess.run(cmd, shell=True, cwd=cwd, capture_output=True, timeout=to)
                 out = p.stdout.decode("utf-8", "replace")
                 err = p.stderr.decode("utf-8", "replace")
-                log("exec", cmd=cmd[:200], code=p.returncode, ms=int((time.time() - t0) * 1000))
+                log("exec", cmd=cmd[:300], code=p.returncode, ms=int((time.time() - t0) * 1000),
+                    out=out[:1200], err=err[:600])
                 return self._json({"ok": p.returncode == 0, "code": p.returncode,
                                    "stdout": out[-20000:], "stderr": err[-8000:],
                                    "ms": int((time.time() - t0) * 1000)})
