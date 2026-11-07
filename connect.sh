@@ -44,6 +44,7 @@ CF="$(command -v cloudflared 2>/dev/null || true)"
 if [ -z "$CF" ]; then
   OS="$(uname -s)"; ARCH="$(uname -m)"
   case "$OS$ARCH" in
+    MINGW*|MSYS*|CYGWIN*) CF_NAME="cloudflared-windows-amd64.exe" ;;
     Darwin*) CF_NAME="cloudflared-darwin-amd64" ;;
     *aarch64*|*arm64*) CF_NAME="cloudflared-linux-arm64" ;;
     *) CF_NAME="cloudflared-linux-amd64" ;;
@@ -53,7 +54,7 @@ if [ -z "$CF" ]; then
     echo "STEP=download_cloudflared"
     GH="https://github.com/cloudflare/cloudflared/releases/latest/download/${CF_NAME}"
     for u in "https://gh-proxy.com/${GH}" "https://ghproxy.net/${GH}" "$GH"; do
-      curl -fSL --max-time 600 -o "$CF" "$u" 2>/dev/null && [ -s "$CF" ] && break
+      curl -fL --max-time 600 -o "$CF" "$u" 2>/dev/null && [ -s "$CF" ] && break
     done
     chmod +x "$CF" 2>/dev/null
   fi
