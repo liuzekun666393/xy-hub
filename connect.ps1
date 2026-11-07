@@ -17,15 +17,16 @@ if (-not $Key) {
 $bases = @(
   "https://raw.githubusercontent.com/$repo/main",
   "https://ghproxy.net/https://raw.githubusercontent.com/$repo/main",
-  "https://ghfast.top/https://raw.githubusercontent.com/$repo/main",
+  "https://gh-proxy.com/https://raw.githubusercontent.com/$repo/main",
   "https://cdn.jsdelivr.net/gh/$repo@main"
 )
 
+Write-Output "STEP=download_core"
 $core = Join-Path $dir "connect_core.py"
 $ok = $false
 foreach ($b in $bases) {
   try {
-    Invoke-WebRequest -UseBasicParsing -TimeoutSec 25 -Uri "$b/connect_core.py" -OutFile $core
+    Invoke-WebRequest -UseBasicParsing -TimeoutSec 30 -Uri "$b/connect_core.py" -OutFile $core
     if ((Get-Item $core).Length -gt 0) { $ok = $true; break }
   } catch { }
 }
@@ -54,21 +55,24 @@ $cf = (Get-Command cloudflared -ErrorAction SilentlyContinue).Source
 if (-not $cf) {
   $cf = Join-Path $dir "cloudflared.exe"
   if (-not (Test-Path $cf)) {
-    foreach ($u in @(
-      "https://ghproxy.net/https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe",
-      "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe"
-    )) {
-      try { Invoke-WebRequest -UseBasicParsing -TimeoutSec 120 -Uri $u -OutFile $cf; if (Test-Path $cf) { break } } catch { }
+    Write-Output "STEP=download_cloudflared"
+    $gh = "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe"
+    foreach ($u in @("https://gh-proxy.com/$gh", "https://ghproxy.net/$gh", $gh)) {
+      try {
+        Invoke-WebRequest -UseBasicParsing -TimeoutSec 600 -Uri $u -OutFile $cf
+        if ((Get-Item $cf).Length -gt 0) { break }
+      } catch { }
     }
   }
   if (-not (Test-Path $cf)) { Write-Output "ERR=no_cloudflared"; exit 1 }
 }
 
+Write-Output "STEP=tunnel"
 $log = Join-Path $dir "cf.log"
 $cfp = Start-Process -FilePath $cf -ArgumentList @("tunnel", "--url", "http://127.0.0.1:$port", "--no-autoupdate", "--logfile", $log) -PassThru -WindowStyle Hidden
 
 $host_ = $null
-for ($i = 0; $i -lt 60; $i++) {
+for ($i = 0; $i -lt 90; $i++) {
   Start-Sleep -Seconds 1
   if (Test-Path $log) {
     $m = Select-String -Path $log -Pattern 'https://[a-z0-9-]+\.trycloudflare\.com' | Select-Object -First 1
