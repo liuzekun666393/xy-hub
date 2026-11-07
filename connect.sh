@@ -10,8 +10,8 @@ mkdir -p "$DIR"
 
 BASE=(
   "https://raw.githubusercontent.com/${REPO}/main"
-  "https://ghproxy.net/https://raw.githubusercontent.com/${REPO}/main"
   "https://gh-proxy.com/https://raw.githubusercontent.com/${REPO}/main"
+  "https://ghproxy.net/https://raw.githubusercontent.com/${REPO}/main"
   "https://cdn.jsdelivr.net/gh/${REPO}@main"
 )
 
@@ -53,8 +53,10 @@ if [ -z "$CF" ]; then
   if [ ! -x "$CF" ]; then
     echo "STEP=download_cloudflared"
     GH="https://github.com/cloudflare/cloudflared/releases/latest/download/${CF_NAME}"
-    for u in "https://gh-proxy.com/${GH}" "https://ghproxy.net/${GH}" "$GH"; do
-      curl -fL --max-time 600 -o "$CF" "$u" 2>/dev/null && [ -s "$CF" ] && break
+    for u in "$GH" "https://gh-proxy.com/${GH}" "https://ghproxy.net/${GH}"; do
+      echo "TRY=$u"
+      curl -fL --progress-bar --max-time 900 -o "$CF" "$u" && [ -s "$CF" ] && break
+      rm -f "$CF"
     done
     chmod +x "$CF" 2>/dev/null
   fi
