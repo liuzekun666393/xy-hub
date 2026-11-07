@@ -83,5 +83,18 @@ for ($i = 0; $i -lt 90; $i++) {
 }
 if (-not $host_) { Write-Output "ERR=no_tunnel"; exit 1 }
 
+$logFile = $null
+if (Test-Path $out) {
+  $lm = Select-String -Path $out -Pattern '"log":\s*"([^"]+)"' | Select-Object -First 1
+  if ($lm) { $logFile = $lm.Matches[0].Groups[1].Value }
+}
+
 Write-Output "URL=$host_"
 Write-Output "TTL=$Ttl"
+Write-Output "READY=1"
+
+if ($logFile -and (Test-Path $logFile)) {
+  Get-Content -Path $logFile -Wait
+} else {
+  while ($true) { Start-Sleep -Seconds 5 }
+}
