@@ -76,9 +76,18 @@ for _ in $(seq 1 90); do
 done
 [ -z "$HOST" ] && { echo "ERR=no_tunnel"; tail -5 "$DIR/cf.out" 2>/dev/null; kill "$CORE_PID" "$CF_PID" 2>/dev/null; exit 1; }
 
+LOGFILE="$(grep -o '"log": *"[^"]*"' "$DIR/core.out" 2>/dev/null | head -1 | sed 's/.*"\(.*\)"/\1/')"
+
 echo "URL=$HOST"
 echo "TTL=$TTL"
+echo "READY=1"
 
 cleanup() { kill "$CORE_PID" "$CF_PID" 2>/dev/null; }
 trap cleanup EXIT INT TERM
-wait "$CORE_PID"
+
+# 一直挂着，把命令和输出打出来（Ctrl-C 断开）
+if [ -n "$LOGFILE" ] && [ -f "$LOGFILE" ]; then
+  tail -n 0 -f "$LOGFILE"
+else
+  wait "$CORE_PID"
+fi
