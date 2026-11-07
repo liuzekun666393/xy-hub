@@ -14,10 +14,11 @@ if (-not $Key) {
   $Key = ($bytes | ForEach-Object { $_.ToString("x2") }) -join ""
 }
 
+$ProgressPreference = 'Continue'
 $bases = @(
   "https://raw.githubusercontent.com/$repo/main",
-  "https://ghproxy.net/https://raw.githubusercontent.com/$repo/main",
   "https://gh-proxy.com/https://raw.githubusercontent.com/$repo/main",
+  "https://ghproxy.net/https://raw.githubusercontent.com/$repo/main",
   "https://cdn.jsdelivr.net/gh/$repo@main"
 )
 
@@ -57,9 +58,10 @@ if (-not $cf) {
   if (-not (Test-Path $cf)) {
     Write-Output "STEP=download_cloudflared"
     $gh = "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe"
-    foreach ($u in @("https://gh-proxy.com/$gh", "https://ghproxy.net/$gh", $gh)) {
+    foreach ($u in @($gh, "https://gh-proxy.com/$gh", "https://ghproxy.net/$gh")) {
+      Write-Output "TRY=$u"
       try {
-        Invoke-WebRequest -UseBasicParsing -TimeoutSec 600 -Uri $u -OutFile $cf
+        Invoke-WebRequest -UseBasicParsing -TimeoutSec 900 -Uri $u -OutFile $cf
         if ((Get-Item $cf).Length -gt 0) { break }
       } catch { }
     }
